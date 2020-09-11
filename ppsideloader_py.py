@@ -287,6 +287,85 @@ def restore_app_exec_backup():
 
 	restore.mainloop()
 
+def sign_enterprise():
+
+	def sign_app():
+		#may or may not inpired by EonSign https://github.com/caspd3v/EonSign/blob/master/EonSign.sh
+		print("Starting to sign app with an enterprise cert.")
+		os.rename(ipa_file.get(), "app.zip")
+		os.mkdir("App")
+		with zipfile.ZipFile("app.zip", 'r') as zip_ref:
+			zip_ref.extractall("App")
+		print("Done!")
+		os.rmtree(f"App/Payload/{app_folder.get()}/_CodeSignature")
+		shutil.copy(mobileprovision_file.get(), "App/Payload/ppsideloader.app/embedded.mobileprovision")
+		os.system(f"/usr/bin/codesign -f -s {p12_file.get()} App/Payload/{app_folder.get()}/")
+		shutil.make_archive("signed_app", 'zip', "App")
+		os.rename("signed_app.zip", "signed_app.ipa")
+		os.remove("signed_app.zip")
+		os.rmtree("App")
+		print("Done!")
+
+	def darkmode():
+		sign.config(bg="#000000")
+		title.config(background="#000000", foreground="#ffffff")
+		empty.config(background="#000000", foreground="#ffffff")
+		name.config(background="#000000", foreground="#ffffff")
+		name2.config(background="#000000", foreground="#ffffff")
+		name3.config(background="#000000", foreground="#ffffff")
+		name4.config(background="#000000", foreground="#ffffff")
+		dark2.config(text="White Mode", command=whitemode)
+
+	def whitemode():
+		sign.config(bg="#ffffff")
+		title.config(background="#ffffff", foreground="#000000")
+		empty.config(background="#ffffff", foreground="#000000")
+		name.config(background="#ffffff", foreground="#000000")
+		name2.config(background="#ffffff", foreground="#000000")
+		name3.config(background="#ffffff", foreground="#000000")
+		name4.config(background="#ffffff", foreground="#000000")
+		dark2.config(text="Dark Mode", command=darkmode)
+
+	sign = Tk()
+	sign.title("Sign App with Enterprise Cert")
+	sign.config(bg="#ffffff")
+	sign.geometry("370x275")
+	sign.iconbitmap('icon.ico')
+	title = Label(sign, text="Sign App with Enterprise Cert\n !!!This Feature is only MacOS!!!")
+	title.config(background="#ffffff", foreground="#000000")
+	title.pack()
+	#Dark/White Mode
+	dark2 = ttk.Button(sign, text="Dark Mode", command=darkmode)
+	dark2.pack()
+	empty = Label(sign, text="")
+	empty.config(background="#ffffff", foreground="#000000")
+	empty.pack()
+	name = Label(sign, text=".p12 file")
+	name.config(background="#ffffff", foreground="#000000")
+	name.pack()
+	p12_file = ttk.Entry(sign)
+	p12_file.pack()
+	name2 = Label(sign, text=".mobileprovision file")
+	name2.config(background="#ffffff", foreground="#000000")
+	name2.pack()
+	mobileprovision_file = ttk.Entry(sign)
+	mobileprovision_file.pack()
+	name3 = Label(sign, text=".ipa file")
+	name3.config(background="#ffffff", foreground="#000000")
+	name3.pack()
+	ipa_file = ttk.Entry(sign)
+	ipa_file.pack()
+	name4 = Label(sign, text=".app folder name")
+	name4.config(background="#ffffff", foreground="#000000")
+	name4.pack()
+	app_folder = ttk.Entry(sign)
+	app_folder.pack()
+	restore_backup = ttk.Button(sign, text="Sign App", command=sign_app)
+	restore_backup.pack()
+
+	sign.mainloop()
+
+
 
 def dark_mode():
 	main.config(bg="#000000")
@@ -408,6 +487,7 @@ tweaks.add_command(label='Creat Spotify++', command=make_Spotify_pp)
 utils=Menu()
 utils.add_command(label='Extract External Framework(s)', command=exctract_framework)
 utils.add_command(label='Restore App Executable', command=restore_app_exec_backup)
+utils.add_command(label='Sign with Enterprise Cert', command=sign_enterprise)
 toolmenu.add_cascade(label='Tweaks',menu=tweaks)
 toolmenu.add_cascade(label='Utils',menu=utils)
 main.config(menu=toolmenu)
